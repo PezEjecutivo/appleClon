@@ -191,3 +191,156 @@ Una vez tenemos el video a nuestro gusto, podemos terminar la estructura del com
 </section>
 ```
 
+---
+
+## Componente ProductViewer 
+
+Lo primero que haremos sera creare su archivo correspondiente en la carpeta de componentes y añadirlo al App.jsx, de esta manera todo lo que hagamos podremos verlo facilmente en la pagina principal, empezaremos creando la estructura principal que es la siguiente:
+
+```html
+<section id='product-viewer'>
+    <h2>Take a closer look.</h2>
+
+    <div className='controls'>
+        <p className='info'>MacbookPro 16" in Space Black</p>
+        
+        <div className='flex-center gap-5 mt-5'>
+            <div className='color-control'>
+                <div className='bg-neutral-300' />
+                <div className='bg-neutral-900' />
+            </div>
+
+            <div className='size-control'>
+                <div><p>14"</p></div>
+                <div><p>16"</p></div>
+            </div>
+        </div>
+    </div>
+    
+    <p className='text-white text-4xl'>Render Canvas</p>
+</section>
+```
+
+En este caso, como queremos renderizar un canvas, el cual sera el propio Macbook Pro, deberemos de instalar las cosas necesarias, aunque se pueden hacer de diferentes maneras, en este caso lo haremos con [ZUSTAND](https://zustand-demo.pmnd.rs/), para instalarlo solo tendremos que usar el siguiente comando:
+
+```
+npm install zustand clsx
+```
+
+Una vez tenemos instalado zustand y clsx, deberemos de crear una carpeta en el directorio src, la cual se llamara store y tendra un archivo llamado index.js, en dicho archivo deberemos de añadir lo siguiente:
+
+```javascript
+import { create } from 'zustand';
+
+const useMacbookStore = create((set) => ({
+    color: '#2e2c2e',
+    setColor: (color) => set({ color }),
+
+    scale: 0.08,
+    setScale: (scale) => set({ scale }),
+
+    reset: () => set({ color: '#2e2c2e', scale: 0.08 })
+}));
+
+export default useMacbookStore;
+```
+
+Esto sirve para darle las propiedades que queremos al MacbookPro, de esta manera, podremos cambiarle los colores y tamaño mediante los set de manera sencilla y rapida. Basicamente lo que estamos haciendo es crear un customHook para el modelo 3D.
+
+Con esto hecho, volveremos al componente de ProductViewer y añadiremos el hook que hemos creado, obteniendo todas las propiedas, color, escala y los setters:
+
+```javascript
+const { color, scale, setColor, setScale } = useMacbookStore();
+```
+
+Con dicha constante creada, ahora deberemos de modificar los divs, los cuales estamos usando como "botones" para controlar los colores y tamaños y añadirle una funciona onClick, la cual sera el setColor o setScale, de esta manera, al pulsar el div cambiaremos el valor de dicha variable al que queremos, ademas de ello, utilizaremos clsx en los classname, para poder añadirle condiciones ternarias para comprobar si estan "seleccionados" y añadirle la clase de activo, aqui hay un ejemplo simple:
+
+```javascript
+<div
+    onClick={() => setColor('#adb5bd')}
+    className={clsx('bg-neutral-300', color === '#adb5bd' && 'active')}
+/>
+```
+
+De esta manera, al pulsar el div, cambiaremos el color al correspondiente y el clsx al comprobar los colores, una vez lo hemos cambiado a ese, la condición sera verdadera y añadira la clase de 'active'.
+
+Gracias a esto, podremos cambiar multiples cosas del div principal, para que se hagan de manera dinamica y fluida, por lo que el div principal del componente ahora mismo seria el siguiente:
+
+```javascript
+<div className='controls'>
+    <p className='info'>MacbookPro {scale} in {color}</p>
+
+    <div className='flex-center gap-5 mt-5'>
+        <div className='color-control'>
+            <div
+                onClick={() => setColor('#adb5bd')}
+                className={clsx('bg-neutral-300', color === '#adb5bd' && 'active')}
+            />
+            <div
+                onClick={() => setColor('#2e2c2e')}
+                className={clsx('bg-neutral-900', color === '#2e2c2e' && 'active')}
+            />
+        </div>
+
+        <div className='size-control'>
+            <div
+                onClick={() => setScale(0.06)}
+                className={clsx(scale === 0.06 ? 'bg-white text-black' 'bg-transparent text-white')}
+            >
+                <p>14"</p>
+            </div>
+            <div
+                onClick={() => setScale(0.08)}
+                className={clsx(scale === 0.08 ? 'bg-white text-black' 'bg-transparent text-white')}
+            >
+                <p>16"</p>
+            </div>
+        </div> 
+    </div>
+</div>
+```
+
+Para comprobar que todo funciona correctamente, si pulsamos un controlador, ya sea el de los colores o el de los tamaños, veremos cambiar el texto, aunque obviamente ese no sera el texto que vamos a dejar, ya que es poco legible, sobretodo el color, ya que esta en hexadecimal en vez de en texto.
+
+Una vez tenemos esto, vamos a renderizar el modelo 3D, para ello vamos a utilizar la libreria de [three.js](https://threejs.org/), en este caso, al estar utilizando react, ademas de instalar three.js, instalaremos dos librerias adiccionales para ayudarnos a utilizar three.js, para ello tendremos que usar el siguiente comando:
+
+```shell
+npm install three @react-three/drei @react-three/fiber
+```
+
+Una vez tenemos instalado todas estas librerias, volveremos a nuestro componente, ProductViewer y en la etiqueta p que teniamos, la cambiaremos por un Canvas, el cual tiene que ser importado de @react-three/fiber y ademas, importaremos una caja (Box) de @react-three/drei, para comprobar que funciona, por lo que ahora, nuestro componente deberia tener una caja blanca (en 3d) y los siguientes imports:
+
+```javascript
+import { Canvas } from '@react-three/fiber';
+import { Box } from '@react-three/drei';
+
+...
+
+<Canvas id='canvas'>
+    <Box position={[-1 ,1, 0]}></Box>
+</Canvas>
+```
+
+Es importante que nuestro Canvas tenga una id, ya que luego le iremos cambiando propiedades a dicho modelo, la propiedad position sirve para mover el modelo, hay que tener en cuenta, que al ser un modelo 3D, tiene 3 ejes, X, Y, Z, los cuales son, horizontal, vertical y profundidad, aunque no hayas tocado modelos 3Ds, puede que estes familiarizado gracias a propiedades de css como z-index.
+
+Para comprobar que nuestros botones funcionan, añadiremos las propiedades correspondientes a la caja y veremos como cambian en función del boton que pulsemos, para cambiar el tamaño usaremos scale y para cambiar el color usaremos material-color y como valor pondremos las variables de nuestro customHook:
+
+```javascript
+<Canvas id='canvas'>
+    <Box position={[-1, 1, 0]} scale={10 * scale} material-color={color}></Box>
+</Canvas>
+```
+
+Una vez tenemos hecho que cuando pulsemos los botones cambie de color y tamaño nos encargaremos de hacer la camara, para ello deberemos de añadir la propiedad camera y ajustarla como nos guste, pero por mucho que lo cambiemos, no podremos mover el modelo, para pdoer mover el modelo deberemos de añadir dentro del Canvas la etiqueta "OrbitControls" y como no queremos que puedan hacer zoom le añadiremos la propiedad de "enableZoom={false}".
+
+```javascript
+<Canvas id='canvas' camera={{ position: [0, 2, 5], fov: 50, near: 0.1, far: 100 }}>
+    <Box position={[0, 0, 0]} scale={10 * scale} material-color={color}></Box>
+
+    <OrbitControls enableZoom={false} />
+</Canvas>
+```
+
+
+
+
