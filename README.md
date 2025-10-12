@@ -70,3 +70,71 @@ export default defineConfig({
 <h1 class="text-3xl font-bold underline text-indigo-700"> Hello world! </h1>
 ```
 
+---
+
+### Componente Navbar
+
+Para crear un componente, deberemos de hacerlo en la carpeta **components** que tenemos que crear dentro de la carpeta **src**, los componentes deben empezar siempre por mayusculas, en nuestro caso sera: Navbar.jsx.
+
+Para hacer el componente más sencillo, crearemos una carpeta llamada **constants** que ira en el directorio raiz, donde pondremos las constantes que vamos a utilizar para nuestros componentes, como en este caso cada enlace de la navbar. Es importante exportar las constantes para poder usarlas en los otros archivos
+
+```javascript
+export const navLinks = [
+    { label: "Store" },
+    { label: "Mac" },
+    { label: "iPhone" },
+    { label: "Watch" },
+    { label: "Vision" },
+    { label: "AirPods" },
+];
+```
+
+En caso de que tuvieramos multiples constantes, podriamos exportarlas todas a la vez al final, en vez de poner export en todas y cada una de ellas. 
+
+Una vez tenemos las constantes, ya podemos usarlas junto a la función .map() para crear listas de maneras dinamicas, esto lo podemos hacer la siguiente manera:
+
+```html
+<ul>
+    {navLinks.map(({ label }) => (
+        <li key={label}>
+            <a href={label}>{label}</a>
+        </li>
+    ))}
+</ul>
+```
+
+Es importante tener en cuenta, que cuando generemos algo de manera dinamica en react, deberemos de añadirle una propiedad key, sin esto, no funcionara.
+
+Para utilizar imagenes tendremos que tenerlas en la carpeta **public** en nuestro directorio raiz, una vez esten ahi podremos importarlas desde cualquier pagina o componente para utilizar, es importante que la ruta empezara desde la carpeta que tiene las imagenes, no desde la carpeta plubic.
+
+Una vez tenemos el componente hecho, el cual seria el siguiente:
+
+```html
+<header>
+    <nav>
+        <a href="/#">
+            <img src="/logo.svg" alt="Apple logo" />
+        </a>
+
+        <ul>
+            {navLinks.map(({ label }) => (
+                <li key={label}>
+                    <a href={label}>{label}</a>
+                </li>
+            ))}
+        </ul>
+        
+        <div className='flex-center gap-3'>
+            <button>
+                <img src="/search.svg" alt="Search" />
+            </button>
+
+            <button>
+                <img src="/cart.svg" alt="Cart" />
+            </button>
+        </div>
+    </nav>
+</header>
+```
+
+Es importante mantener una estructura de pagina correcta, por lo que aunque este sea el componente de la navbar, como es lo unico que estara dentro del header, deberemos ponerlo, ya que sino, nuestra estructura final no tendra header y puede causarnos problemas de SEO, ademas de ser negativo en otros aspectos.
