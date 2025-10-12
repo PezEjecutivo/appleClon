@@ -1,4 +1,7 @@
 
+Enlace a la web: <br/>
+Enlace al repositorio: 
+
 ---
 
 Creamos un proyecto de react, para hacerlo más ligero lo hacemos mediante [vite](https://vite.dev/):
@@ -138,3 +141,53 @@ Una vez tenemos el componente hecho, el cual seria el siguiente:
 ```
 
 Es importante mantener una estructura de pagina correcta, por lo que aunque este sea el componente de la navbar, como es lo unico que estara dentro del header, deberemos ponerlo, ya que sino, nuestra estructura final no tendra header y puede causarnos problemas de SEO, ademas de ser negativo en otros aspectos.
+
+---
+
+## Hero layout
+
+Lo primero que haremos sera creare su archivo correspondiente en la carpeta de componentes y añadirlo al App.jsx, de esta manera todo lo que hagamos podremos verlo facilmente en la pagina principal, empezaremos creando la estructura principal que es la siguiente:
+
+```html
+<section id='hero'>
+    <div>
+        <h1>MacBook Pro</h1>
+        <img src="/title.png" alt="MacBook Title" />
+    </div>
+    
+    <video src="/videos/hero.mp4" autoPlay muted playsInline />
+</section>
+```
+
+Es importante que cuando vayamos a usar un video en React le añadamos un ref, esto es debido a que si usamos un useRef() junto al video, podremos modificarlos de muchas más maneras que si no, para hacer esto es tan sencillo como crear una constante que sera la referencia del video y se la pondremos al video:
+
+```javascript
+const videoRef = useRef()
+...
+<video ref={videoRef} src="/videos/hero.mp4" autoPlay muted playsInline />
+```
+
+De esta manera, ahora si utilizamos un useEffect(), podremos cambiarle cosas al video, como la velocidad en la que se reproduce para que la "animación" quede más rapida y visual, ya que si la animación es muy lenta puede parecer que la pagina funciona mal o perjudicar la experiencia del usuario al tener que "esperar" para ver la animación completa:
+
+```javascript
+useEffect(() => {
+    if (videoRef.current) videoRef.current.playbackRate = 2;
+}, []);
+```
+
+Una vez tenemos el video a nuestro gusto, podemos terminar la estructura del componente añadiendole un poquitin de html extra, siendo este nuestro resultado final:
+
+```html
+<section id='hero'>
+    <div>
+        <h1>MacBook Pro</h1>
+        <img src="/title.png" alt="MacBook Title" />
+    </div>
+
+    <video ref={videoRef} src="/videos/hero.mp4" muted playsInline />
+
+    <button>Buy</button>
+    <p>From $1599 or %133/mo for 12 months</p>
+</section>
+```
+
