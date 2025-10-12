@@ -30,6 +30,22 @@ Antes de continuar, es una buena práctica dejar limpio el proyecto. Por ello, t
 
 Ahora en el archivo de `App.jsx`haremos un **rafce**, para crear la estructura basica de un componente de React, si tenemos desplegado el proyecto y lo vemos, deberia de aparecer un texto que pone "App" en un fondo blanco
 
+### Registro de Plugins de GSAP 
+Vamos a utilizar dos plugins esenciales de GSAP: **ScrollTrigger** y **SplitText**. Para que estos plugins funcionen correctamente, debemos registrarlos. 
+
+Sigue estos dos pasos para la importación y el registro: 
+1. **Importa los plugins** que necesitas usando esta línea de código: 
+```javascript 
+import { ScrollTrigger, SplitText } from 'gsap/all' 
+```
+ 
+2. **Registra los plugins** usando la función `gsap.registerPlugin()`: 
+```javascript 
+gsap.registerPlugin(ScrollTrigger, SplitText)
+``` 
+
+> **Consejo Clave:** Para mantener tu código **limpio y organizado**, lo mejor es registrar estos plugins en el archivo **`App.jsx`**. Si no los registras allí, tendrás que importarlos y registrarlos en *cada* componente donde vayas a utilizarlos. ¡Así te ahorras trabajo! 
+
 ---
 
 ## Instalando Tailwind CSS en Vite ✨
@@ -389,9 +405,9 @@ Es importante recordar importar el modelo, una vez hecho esto, no se vera practi
 Es importante no confundir ambientLight con AmbientLight de Three, ya que son cosas diferente y probablemente no funcione, una vez tenemos ese Canvas, si pulsamos los botones no pasara nada, ya que le hemos puestos valores fijos, por lo que no te preocupes si ves que han dejado de funcionar. Nuestro siguiente paso es modificar la luz para que se vea correctamente, lo cual es un poco más dificil de lo que puede parecera primera vista, ya que no solo sirvecon el ambientLight intesity={1}
 
 
-## Component StudioLights
+## Componente StudioLights
 
-Lo primero que haremos sera crear su archivo correspondiente en la carpeta de componentes y añadirlo al App.jsx, de esta manera todo lo que hagamos podremos verlo facilmente en la pagina principal, este sera el componente que utilizaremos en vez del ambientLights.
+Lo primero que haremos sera crear una carpeta llamada three dentro de components, ya que este sera un componente para three.js, ahora crearemos el archivo StudioLights.jsx dentro de dicha carpeta, que sera este sera el componente que utilizaremos en vez del ambientLights.
 
 Es importante saber que cuando hagamos el cambio la pagina se rompera, ya que el modelo 3D no funcionara al tener el componente dentro del canvas sin formar parte de él, para solucionar este problema deberemos de cambiar la etiqueta principal del componente a group, de esta manera funcionara.
 
@@ -485,3 +501,171 @@ Ahora simplemente añadiremos unos cuantos destellos más para que quede mejor, 
     />
 </group>
 ```
+
+---
+
+## Componente ModelSwitcher
+
+Esta vez, en vez de crear el componente en la carpeta de components, deberemos de hacerlo en la carpeta three que hemos creado para el componente anterior, ya que va a ser un componente de three.js, Una vez dentro de esa carpeta, crearemos el componente ModelSwitcher.jsx, el cual nos servira para animar con GSAP los cambios de modelo, ademas añadiremos los PresentationControls, que haran lo que ahora mismo hace OrbitControls, pero de una manera más customizable.
+
+Importaremos el componente ModelSwitcher, ademas de crear la constante de isMobile con el useMediaQuery, esto nos servira para crear una condición ternaria la cual dependiendo de nuestra resolución cambiar el tamaño del modelo, ya que si es mobil lo haremos algo más pequeño para que quepa en pantalla:
+
+```javascript
+<ModelSwitcher scale={isMobile ? scale - 0.03 : scale} isMobile={isMobile} />
+```
+
+Una vez tenemos este añadimiento, vamos a crear el componente, es importante tener en cuenta, que le estamos pasando propiedades, por lo que a diferencia de los anteriores, deberemos de añadirle dichas propiedades a la hora de crear el componente, ademas, crearemos una referencia para saber cual es el que modelo que vamos a mostrar. Ademas de crear una constante para el tamaño, es importante añadirle un or, ya que en caso de que sea resolución de movil, el tamaño debera ser más pequeño:
+
+```javascript
+const SCALE_LARGE_DESKTOP = 0.08;
+const SCALE_LARGE_MOBILE = 0.05;
+
+const smallMacbookRef = useRef();
+const largeMacbookRef = useRef();
+
+const showLargeMacbook = scale === SCALE_LARGE_DESKTOP || scale === SCALE_LARGE_MOBILE;
+```
+
+En vez de tener la etiqueta del componente como section o un div, dejaremos la etiqueta vacia, creando así un reactFragment, el cual contendra el PresntationControls, él cual debemos de importar de @react-thre/drei, dentro de dicha etiqueta tendremos un group, el cual tendra un ref para saber que modelo es y el modelo correspondiente, esto lo duplicaremos, para tener uno por cada modelo, quedando el siguiente resultado:
+
+```javascript
+<PresentationControls>
+    <group ref={largeMacbookRef}>
+        <MacbookModel16 scale={isMobile ? 0.05 : 0.08} />
+    </group>
+</PresentationControls>
+
+<PresentationControls>
+    <group ref={smallMacbookRef}>
+        <MacbookModel14 scale={isMobile ? 0.03 : 0.06} />
+    </group>
+</PresentationControls>
+```
+
+Una vez tenemos esto, veremos 3 modelos en la pagina, esto es debido a que aún no habiamos borrado el MacbookModel14 que teniamos, por lo que al borrarlo veremos que solo quedan 2, de los cuales, comentaremos uno, aunque le iremos haciendo los cambios a la vez, esto nos servira para poder ver facilmente lo que estamos haciendo.
+
+Les pasaremos una copia del objeto gracia a los ... y añadiremos la constante controlsConfig, la cual crearemos con la propiedad de `snap: true`, esto sera para cuando movamos el Macbook, se reposicione automaticamente a su posición de origen.
+
+```javascript
+<PresentationControls {... controlsConfig}>
+    <group ref={largeMacbookRef}>
+        <MacbookModel16 scale={isMobile ? 0.05 : 0.08} />
+    </group>
+</PresentationControls>
+
+{/* <PresentationControls {...controlsConfig}>
+    <group ref={smallMacbookRef}>
+        <MacbookModel14 scale={isMobile ? 0.03 : 0.06} />
+    </group>
+</PresentationControls> */}
+```
+
+Una vez hemos comprobado que funciona, añadiremos más configuraciones a dicha constante, de esta manera personalizaremos a nuestro gusto los controles de la camara, de la siguiente manera: </br>
+snap: Vuelve a la posición de origen. </br>
+speed: Cambia la velocidad de lo que mueves. </br>
+zoom: Es el zoom de la camara </br>
+polar: [-Math.PI, Math.PI]: Hace que puedas moverlo en el eje Y todo lo que quieras. </br>
+azimuth: [-Infinity, Infinity]: Hace que puedas moverlo en el eje X todo lo que quieras. </br>
+config: { mass: 1, tension: 0, friction: 26 }: Imita las fisicas reales </br>
+
+De esta manera, nuestro objeto de configuración sera esto:
+
+```javascript
+const controlsConfig = {
+    snap: true,
+    speed: 1,
+    zoom: 1,
+    polar: [-Math.PI, Math.PI],
+    azimuth: [-Infinity, Infinity],
+    config: { mass: 1, tension: 0, friction: 26 }
+};
+```
+Ahora vamos a crear algunas constantes que utilizaremos para las animaciones y modelos, como la duración y la distancia a la que vamos a mover los modelos cuando los cambiemos, ya que van a aparecer que se van y vuelven, para esto utilizaremos una función, que en caso de tener un grupo, miraremos cada elemento dentro del grupo y le aplicaremos los estilos y animaciones
+
+```javascript
+const ANIMATION_DURATION = 1;
+const OFFSET_DISTANCE = 5;
+
+const fadeMeshes = (group, opacity) => {
+    if (!group) return;
+
+    group.traverse((child) => {
+        if (child.isMesh) {
+            child.material.transparent = true;
+            gsap.to(child.material, { opacity, duration: ANIMATION_DURATION });
+        }
+    });
+};
+```
+
+De esta manera, aplicaremos la animación del gsap.to() a todos los hijos del elemento group, que hara transparante tanto el material como el propio elemento, haciendo ver que "desaparece", ademas de esto, para darle una mejor experiencia al usuario, haremos que se muevan para un lado antes de desaparecer por completo, dando una sensación más natural
+
+```javascript
+const moveGroup = (group, x) => {
+    if (!group) return;
+
+    gsap.to(group.position, { x, duration: ANIMATION_DURATION });
+};
+```
+
+Una vez tenemos estas funciones creadas, para poder utilizar de manera correcta deberemos de utilizar el hook de useGSAP(), el cual deberemos hacer que se renderice cada vez que le cambiemos el tamaño al modelo, ya que queremos que la animación aparezca cuando cambiemos el tamaño:
+
+```javascript
+useGSAP(() => { }, [scale]);
+```
+
+Una vez tenemos el useGSAP() que se actualiza cuando queremos, deberemos de añadirle las funciones que hemos creado anteriormente, para ocultar o mostrar y hacer que se muevan los modelos
+
+```javascript
+useGSAP(() => {
+    
+    if (showLargeMacbook) {
+        moveGroup(smallMacbookRef.current, -OFFSET_DISTANCE);
+        moveGroup(largeMacbookRef.current, 0);
+
+        fadeMeshes(smallMacbookRef.current, 0);
+        fadeMeshes(largeMacbookRef.current, 1);
+    } else {
+        moveGroup(smallMacbookRef.current, 0);
+        moveGroup(largeMacbookRef.current, +OFFSET_DISTANCE);
+
+        fadeMeshes(smallMacbookRef.current, 1);
+        fadeMeshes(largeMacbookRef.current, 0);
+    }
+
+}, [scale]);
+```
+
+Es importante que descomentemos el que habiamos comentado anteriormente, ya que si no, no se mostrara el otro modelo una vez se haga la animación y quedara vacio, despues de haber hecho esto solo nos faltaria hacer que podamos cambiar el color, ya que actualmente no funciona. 
+
+Para hacer que funcione tendremos que ir al modelo y añadirle una constante del color, la cual vendra del useMacbookStore(), una vez tenemos esto, tambien deberemos de obtener la escena del useGLTF, una vez tenemos esas dos cosas adicionales, crearemos un useEffect que se renderice cada vez que actualizamos el color, ya que es lo que nos falta:
+
+```javascript
+const { color } = useMacbookStore();
+const { nodes, materials, scene } = useGLTF('/models/macbook-14-transformed.glb');
+
+...
+
+useEffect(() => { }, [color]);
+```
+
+Con eso ya como base deberemos de modificar el useEffect(), para que pille la escena y a cada elemeto hijo de la escena, en caso de que sea un mesh (un mesh es una parte del modelo 3D) y no sea una de las partes que no debemos cambiar, le cambiaremos el color al correspondiente que estamos sacando del useMacbookStore(). De esta manera, aunque en el ProductViewer no se le esta pasando el color, como lo obtenemos directamente el hook, sigue funcionando los botones:
+
+
+```javascript
+useEffect(() => {
+
+    scene.traverse((child) => {
+        if (child.isMesh) {
+            if (!noChangeParts.includes(child.name)) {
+                child.material.color = new Color(color);
+            }
+        }
+    });
+
+}, [color, scene]);
+```
+
+Es importante que hagamos estas modificaciones en los dos modelos, ya que si solo lo hacemos en uno, no funcionara en el otro, ya que no lo tiene implementado, para ello, simplemente deberemos copiar y pegar.
+
+
