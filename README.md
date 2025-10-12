@@ -389,3 +389,99 @@ Es importante recordar importar el modelo, una vez hecho esto, no se vera practi
 Es importante no confundir ambientLight con AmbientLight de Three, ya que son cosas diferente y probablemente no funcione, una vez tenemos ese Canvas, si pulsamos los botones no pasara nada, ya que le hemos puestos valores fijos, por lo que no te preocupes si ves que han dejado de funcionar. Nuestro siguiente paso es modificar la luz para que se vea correctamente, lo cual es un poco más dificil de lo que puede parecera primera vista, ya que no solo sirvecon el ambientLight intesity={1}
 
 
+## Component StudioLights
+
+Lo primero que haremos sera crear su archivo correspondiente en la carpeta de componentes y añadirlo al App.jsx, de esta manera todo lo que hagamos podremos verlo facilmente en la pagina principal, este sera el componente que utilizaremos en vez del ambientLights.
+
+Es importante saber que cuando hagamos el cambio la pagina se rompera, ya que el modelo 3D no funcionara al tener el componente dentro del canvas sin formar parte de él, para solucionar este problema deberemos de cambiar la etiqueta principal del componente a group, de esta manera funcionara.
+
+```javascript
+const StudioLights = () => {
+    return (
+        <group name='lights'></group>
+    );
+};
+```
+
+Esto lo estamos haciendo para poder crear entorno, el cual lo haremos con Environment el cual importamos de @react-three/drei, le pondremos la propiedad de resolution={256}, él cual es una resolución equilibrado tanto en resolución como en rendimiento.
+
+Dentro del Environment crearemos otro group para poder meter varias cosas, las cuales seran Lightformer, importadas tambien de @react-three/drei, pondremos dos, ya que una vendra de la derecha y otra de la izquierda, para que este completamente iluminado
+
+```javascript
+<group>
+    <Lightformer
+        form="rect"
+        intensity={10}
+        position={[-10, 5, -5]}
+        scale={10}
+        rotation-y={Math.PI / 2}
+    />
+
+    <Lightformer
+        form="rect"
+        intensity={10}
+        position={[10, 0, 1]}
+        scale={10}
+        rotation-y={Math.PI / 2}
+    />
+</group>
+```
+
+Una vez tenemos las luces principales, podemos crear spotligths, que son basicamentes, destellos o luces de resalto, las cuales sirven para resaltar ciertas partes, esto lo haremos con la etiqueta spotLight:
+
+```javascript
+<spotLight
+    position={[-2, 10, 5]}
+    angle={0.15}
+    decay={0}
+    intensity={Math.PI * 0.2}
+/>
+```
+
+Ahora simplemente añadiremos unos cuantos destellos más para que quede mejor, dando el siguiente componente final:
+
+```javascript
+<group name='lights'>
+
+    <Environment resolution={256}>
+        <group>
+            <Lightformer
+                form="rect"
+                intensity={10}
+                position={[-10, 5, -5]}
+                scale={10}
+                rotation-y={Math.PI / 2}
+            />
+
+            <Lightformer
+                form="rect"
+                intensity={10}
+                position={[10, 0, 1]}
+                scale={10}
+                rotation-y={Math.PI / 2}
+            />
+        </group>
+    </Environment>
+
+    <spotLight
+        position={[-2, 10, 5]}
+        angle={0.15}
+        decay={0}
+        intensity={Math.PI * 0.2}
+    />
+
+    <spotLight
+        position={[0, -25, 10]}
+        angle={0.15}
+        decay={0}
+        intensity={Math.PI * 0.2}
+    />
+
+    <spotLight
+        position={[0, 15, 5]}
+        angle={0.15}
+        decay={0}
+        intensity={Math.PI * 1}
+    />
+</group>
+```
