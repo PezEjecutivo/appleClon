@@ -341,6 +341,51 @@ Una vez tenemos hecho que cuando pulsemos los botones cambie de color y tamaño 
 </Canvas>
 ```
 
+## Renderizado de modelo
 
+Aunque tengamos el modelo 3D que necesitamos o queremos, no podremos usarlo si no lo convertimos en un componente de React, para ello utilizaremos GLTFJSX, con el siguiente comando, el cual basicamente convierte el modelo en un componente de React utilizando gltfjsx, utilizamos el -T para darle una estructura más sencilla y limpia:
+
+(Es importante que pongas la ruta correctamente, en este caso mi ruta era .\ ya que estoy en windows y en la carpeta donde se encuentra los modelos, la cual tengo dentro de public y models, por lo que si estas en la carpeta del proyecto tendras que usar una ruta similar a ./public/models/macbook-14.glb)
+
+```shell
+npx gltfjsx .\macbook-14.glb -T
+```
+
+Una vez hemos hecho esto veremos que en la propia carpeta se nos ha creado un archivo, él cual es el modelo 3D pero en formato .jsx, para tener una mejor estructura crearemos una carpeta models dentro de la carpeta components en la cual añadiremos dichos archivos.
+
+En el archivo de modelo .jsx, deberemos de cambiar algunas cosas, como el nombre, ya que no lo llamaremos Model, sino su nombre correspondiente que en este caso es: MacbookModel14, cambiaremos a que el export sea un export default y ademas deberemos de cambiar la ruta, en nuestro caso solo tendremos que añadirle /models/ ya que los modelos estan dentro de la carpeta /public/models/
+
+Para poder añadirle una textura utilizaremos una constante el cual sera un hook, especificamente useTexture(), una vez hecho esto deberemos de añadirle en el mesh node 123, la siguiente etiqueta:
+
+```javascript
+<meshBasicMaterial map={texture} />
+```
+
+De esta manera cambiaremos la textura, una vez hecho esto, deberemos de hacer lo mismo pero con los demas modelos, ya que no vamos a utilizar solamente 1, es importante que hagamos este proceso en los 3 modelos, macbook14, macbook16 y macbook.
+
+En este caso, con los modelos ya hechos, podremos cambiar nuestra caja, por el modelo, en este  caso el que estara renderizado sera el MacbookModel14, por lo quenuestro canvas deberia verse de la siguiente manera:
+
+```javascript
+<Canvas id='canvas' camera={{ position: [0, 2, 5], fov: 50, near: 0.1, far: 100 }}>
+
+    <MacbookModel14 scale={0.06} position={[-1, 0, 0]} />
+    <OrbitControls enableZoom={false} />
+
+</Canvas>
+```
+
+Es importante recordar importar el modelo, una vez hecho esto, no se vera practicamente nada, solamente la textura de la pantalla que le hemos dado antes, para hacer que sea visible deberemos de añadirle una luz ambiental, ya que el modelo esta completamente a oscuras, para hacer eso deberemos de utilizar otra etiqueta, la cual es ambientLight y añadirle la propiedad de intensity, dandonos el siguiente resultado:
+
+```javascript
+<Canvas id='canvas' camera={{ position: [0, 2, 5], fov: 50, near: 0.1, far: 100 }}>
+
+    <ambientLight intesity={1} />
+    <MacbookModel14 scale={0.06} position={[0, 0, 0]} />
+    <OrbitControls enableZoom={false} />
+
+</Canvas>
+```
+
+Es importante no confundir ambientLight con AmbientLight de Three, ya que son cosas diferente y probablemente no funcione, una vez tenemos ese Canvas, si pulsamos los botones no pasara nada, ya que le hemos puestos valores fijos, por lo que no te preocupes si ves que han dejado de funcionar. Nuestro siguiente paso es modificar la luz para que se vea correctamente, lo cual es un poco más dificil de lo que puede parecera primera vista, ya que no solo sirvecon el ambientLight intesity={1}
 
 
