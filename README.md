@@ -560,13 +560,13 @@ Les pasaremos una copia del objeto gracia a los ... y añadiremos la constante c
 </PresentationControls> */}
 ```
 
-Una vez hemos comprobado que funciona, añadiremos más configuraciones a dicha constante, de esta manera personalizaremos a nuestro gusto los controles de la camara, de la siguiente manera: </br>
-snap: Vuelve a la posición de origen. </br>
-speed: Cambia la velocidad de lo que mueves. </br>
-zoom: Es el zoom de la camara </br>
-polar: [-Math.PI, Math.PI]: Hace que puedas moverlo en el eje Y todo lo que quieras. </br>
-azimuth: [-Infinity, Infinity]: Hace que puedas moverlo en el eje X todo lo que quieras. </br>
-config: { mass: 1, tension: 0, friction: 26 }: Imita las fisicas reales </br>
+Una vez hemos comprobado que funciona, añadiremos más configuraciones a dicha constante, de esta manera personalizaremos a nuestro gusto los controles de la camara, de la siguiente manera: <br/>
+snap: Vuelve a la posición de origen. 
+speed: Cambia la velocidad de lo que mueves. 
+zoom: Es el zoom de la camara 
+polar: [-Math.PI, Math.PI]: Hace que puedas moverlo en el eje Y todo lo que quieras. 
+azimuth: [-Infinity, Infinity]: Hace que puedas moverlo en el eje X todo lo que quieras. 
+config: { mass: 1, tension: 0, friction: 26 }: Imita las fisicas reales 
 
 De esta manera, nuestro objeto de configuración sera esto:
 
