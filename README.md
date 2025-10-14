@@ -561,6 +561,7 @@ Les pasaremos una copia del objeto gracia a los ... y añadiremos la constante c
 ```
 
 Una vez hemos comprobado que funciona, añadiremos más configuraciones a dicha constante, de esta manera personalizaremos a nuestro gusto los controles de la camara, de la siguiente manera: <br/>
+
 snap: Vuelve a la posición de origen. <br/>
 speed: Cambia la velocidad de lo que mueves. <br/>
 zoom: Es el zoom de la camara <br/>
@@ -667,5 +668,262 @@ useEffect(() => {
 ```
 
 Es importante que hagamos estas modificaciones en los dos modelos, ya que si solo lo hacemos en uno, no funcionara en el otro, ya que no lo tiene implementado, para ello, simplemente deberemos copiar y pegar.
+
+## Componente Showcase
+
+Lo primero que tendremos que hacer es crear un componente, en este caso, si va a ser un componente normal de React, por lo que lo crearemos y lo importaremos justo debajo del componente ProductViewer, la estructura de nuestro nuevo componente sera la siguiente:
+
+```html
+<section id='showcase'>
+    <div className='media'>
+        <video src="/videos/game.mp4"></video>
+    </div>
+</section>
+```
+
+Aunque con esa estructura parece solamente una imagen, es un video, para hacer que se reproduzca de la manera en la que queremos, deberemos de añadir las siguientes etiquetas </br>
+
+loop: Para que se repita indefinidamente </br>
+muted: Para que no tenga sonido </br>
+autoPlay: Para que se reproduzca automaticamente </br>
+playsInline: Para que no tenga reproductor </br>
+
+De esta manera, tendremos la siguiente estructura y el video ahora se reproducira perfectamente:
+
+```html
+<section id='showcase'>
+    <div className='media'>
+        <video src="/videos/game.mp4" loop muted autoPlay playsInline></video>
+    </div>
+</section>
+```
+
+Una vez tenemos el video funcionando, como nuestro objeto es hacer una animación similar a la que hicimos en la otra pagina pero a la inversa, es decir, un enmascaramiento del video con una imagen, para que el video se quede reproduciendo de fondo en la imagen, dandole un toque "impresionante" al componente/sección.
+
+Para ello, en el propio div que contiene el video, añadiremos otro con el className de "mask" y le añadiremos un img, con la imagen que queremos usar para hacer el enmascaramiento, haciendo que el div que contiene el video se vea así.
+
+```html
+<div className='media'>
+    <video src="/videos/game.mp4" loop muted playsInline></video>
+    <div className='mask'>
+        <img src="/mask-logo.svg" alt="logo del chip apple" />
+    </div>
+</div>
+```
+
+Aunque actualmente no podremos ver la imagen, a no ser que estemos con una resolución de mobil, añadiremos el siguiente contenido para tener el componente con todo el contenido que queremos, el cual, solo podra verse de momento en modo mobil, una vez comprobemos que esta todo, lo animaremos para resoluciones mayores:
+
+```html
+<section id='showcase'>
+
+    <div className='media'>
+        <video src="/videos/game.mp4" loop muted autoPlay playsInline></video>
+
+        <div className='mask'>
+            <img src="/mask-logo.svg" alt="logo del chip de apple" />
+        </div>
+    </div>
+
+    <div className='content'>
+        <div className='wrapper'>
+
+            <div className='lg:max-w-md'>
+                <h2>Rocket Chip</h2>
+
+                <div className='space-y-5 mt-7 pe-10'>
+                    <p>Introducing {" "}
+                        <span className='text-white'>
+                            M4, the next generation of Apple silicon
+                        </span>
+                        . M4 powers
+                    </p>
+                    <p>
+                        It drives Apple intelligence on iPad Pro, so you can write, create, and accomplish more with ease. All in a design that's unbelievably thin, light, and powerful.
+                    </p>
+                    <p>
+                        A brand-new display engine delivers breathtaking precision, color accuracy, and brightness. And a next-gen GPU with hardware-accelerated ray tracing brings console-level graphics to your fingertips.
+                    </p>
+                    <p className='text-primary'>Learn more about Apple Intelligence</p>
+                </div>
+
+            </div>
+
+            <div className='max-w-3xs spcae-y-14'>
+
+                <div className='space-y-2'>
+                    <p>Up to</p>
+                    <h3>4x faster</h3>
+                    <p>pro rendering perfomance than M2</p>
+                </div>
+
+                <div className='space-y-2'>
+                    <p>Up to</p>
+                    <h3>1.5x faster</h3>
+                    <p>CPU perfomance than M2</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+```
+
+Una vez tenemos la estructura, vamos a empezar a animarlo, para ello, lo primero que vamos a hacer, es mediante el hook, useMediaQuery, crear una variable que guardara el valor para comprobar si la resolución es de una tablet, despues de eso utilizaremos el useGSAP() junto a un condicional usando la variable que hemos creado previamente:
+
+```javascript
+const isTablet = useMediaQuery({ query: '(max-width: 1024px)' });
+
+useGSAP(() => {
+    if(!isTablet) {
+
+    }
+})
+```
+
+Es importante tener en cuenta que el if esta negado, ya que esto solo se hara si la resolución es mayor a la de una tablet/movil, de ahi, que antes solamente se viera con una resolución menor, una vez tenemos esto, deberemos de crear una timeline, con un scrollTrigger con las siguientes caracteristicas </br>
+
+trigger: '#showcase' - Para utilizar la section showcase como iniciador/disparador </br>
+start: 'top top' - Para que empiece la animación cuando la parte de arriba de la pantalla alcance la parte de arriba del trigger </br>
+end: 'bottom top' - Para marcar el final de la animación cuando la parte de abajo de la pantalla alcance la parte de arriba del trigger </br>
+scrub: true - Para que la animación se haga a la vez que scrolleamos </br>
+pin: true - Para que se quede en mitad de la pantalla a medida que scrolleamos </br>
+
+Dandonos una timeline final de esta manera:
+
+```javascript
+const timeline = gsap.timeline({
+    scrollTrigger: {
+        trigger: '#showcase',
+        start: 'top top',
+        end: 'bottom top',
+        scrub: true,
+        pin: true,
+    }
+});
+```
+
+Las animaciones seran muy simples, tales como poner el texto con opacidad 1 y bajar el tamaño de la imagen con scale, de esta manera podremos hacer una animación simple pero bonita:
+
+```javascript
+timeline
+.to('.mask img', {
+    transform: 'scale(1.2)'
+})
+.to('.content', { opacity: 1, y: 0, ease: 'power1.in' });
+```
+
+Una vez hemos hecho esto, puede que no funcione o que solamente funciona cuando cambiamos de tamaño a la ventana, esto se debe a que cuando cambiamos el tamaño de la ventana se aplica automaticamente un ScrollTrigger.refresh(). Y por que necesitamos un ScrollTrigger.refresh()? Esto es debido a que el scrollTrigger se aplica antes de que cargue el contenido de la pagina, es decir, la imagen y el video.
+
+Es por esto, que si cambiamos el tamaño de la ventana, como lo hacemos una vez han cargado tanto el video como la imagen, el refresh() se activara y modificara el pin acorde, para solucionar este problema no basta con un setTimeout(), ya que esto lo que haria sería retrasar la creación del scrollTrigger, por lo que no se aplicaria nunca el pin, ya que el pin es un elemento que se crea en el DOM.
+
+Como lo solucionamos? Para solucionar este problema, deberemos de utilizar los metodos onLoadedData, en caso del video y onLoad, en caso de la imagen y le pasaremos una función por expresión que sera la siguiente:
+
+```javascript
+const refreshScroll = () => {
+    ScrollTrigger.refresh();
+};
+
+...
+
+<video src="/videos/game.mp4" loop muted autoPlay playsInline onLoadedData={refreshScroll} ></video>
+<div className='mask'>
+    <img src="/mask-logo.svg" alt="logo del chip apple" onLoad={refreshScroll} />
+</div>
+```
+
+De esta manera, se hara el ScrollTrigger.refresh() de manera automatica, el unico problema que tiene esta solución es que necesitaremos importar de nuevo el ScrollTrigger ya que estamos usando una función de dicho objeto directamente, por lo que crearemos un poco de duplicidad en el codigo, aunque repetir partes de codigo no es lo mejor, al ser algo tan pequeño y una unica vez adiccional, no es tan negativo.
+
+```javascript
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+gsap.registerPlugin(ScrollTrigger);
+```
+
+Una vez con todo esto quedaria el siguiente componente, funcionando de manera adecuada en todas las resoluciones y momentos
+
+```javascript
+import { useGSAP } from '@gsap/react';
+import gsap from 'gsap';
+import { useMediaQuery } from 'react-responsive';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+gsap.registerPlugin(ScrollTrigger);
+
+const Showcase = () => {
+    const isTablet = useMediaQuery({ query: '(max-width: 1024px)' });
+
+    useGSAP(() => {
+        if (!isTablet) {
+            const timeline = gsap.timeline({
+                scrollTrigger: {
+                    trigger: '#showcase',
+                    start: 'top top',
+                    end: 'bottom top',
+                    scrub: true,
+                    pin: true,
+                }
+            });
+
+            timeline
+                .to('.mask img', {
+                    transform: 'scale(1.2)'
+                })
+                .to('.content', { opacity: 1, y: 0, ease: 'power1.in' });
+        }
+    }, [isTablet]);
+
+    const refreshScroll = () => {
+        ScrollTrigger.refresh();
+    };
+
+    return (
+        <section id='showcase'>
+            <div className='media'>
+                <video src="/videos/game.mp4" loop muted autoPlay playsInline onLoadedData={refreshScroll} ></video>
+                <div className='mask'>
+                    <img src="/mask-logo.svg" alt="logo del chip de apple" onLoad={refreshScroll} />
+                </div>
+            </div>
+
+            <div className='content'>
+                <div className='wrapper'>
+                    <div className='lg:max-w-md'>
+                        <h2>Rocket Chip</h2>
+
+                        <div className='space-y-5 mt-7 pe-10'>
+                            <p>Introducing {" "}
+                                <span className='text-white'>
+                                    M4, the next generation of Apple silicon
+                                </span>
+                                . M4 powers
+                            </p>
+                            <p>
+                                It drives Apple intelligence on iPad Pro, so you can write, create, and accomplish more with ease. All in a design that's unbelievably thin, light, and powerful.
+                            </p>
+                            <p>
+                                A brand-new display engine delivers breathtaking precision, color accuracy, and brightness. And a next-gen GPU with hardware-accelerated ray tracing brings console-level graphics to your fingertips.
+                            </p>
+                            <p className='text-primary'>Learn more about Apple Intelligence</p>
+                        </div>
+                    </div>
+
+                    <div className='max-w-3xs space-y-14'>
+                        <div className='space-y-2'>
+                            <p>Up to</p>
+                            <h3>4x faster</h3>
+                            <p>pro rendering perfomance than M2</p>
+                        </div>
+                        <div className='space-y-2'>
+                            <p>Up to</p>
+                            <h3>1.5x faster</h3>
+                            <p>CPU perfomance than M2</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+};
+
+export default Showcase;
+```
+
 
 
