@@ -925,5 +925,162 @@ const Showcase = () => {
 export default Showcase;
 ```
 
+## Componente Perfomance
+
+Crearemos el componente como un componente normal de React y cambiaremos el div por un section, como acostumbramos a hacer en este proyecto. Es recomendable que tu pagina siga una estructura, de ahi que todos los componentes o la gran mayoria, utilicen section en vez del div que sale al crearlo con rafce.
+
+Como en este componente vamos a utilizar muchas imagenes, para no llenar el HTML y dejarlo limpio para cuando vayamos a ver el codigo, renderizaremos las imagenes de manera dinamica, para ello, mapearemos las imagenes desde nuestro archivo de constantes:
+
+```javascript
+<div className='wrapper'>
+    {performanceImages.map(( image ) => (
+        <img key={image.id} src={image.src} alt={image.id} />
+    ))}
+</div>
+```
+
+Es importante saber que aunque esto funciona, no es lo más optimo, ya que estamos repitiendo multiples veces la palabra "image", añadiendo ruido y duplicidad al codigo, para solucionar esto, en vez de poner image en el map, pondremos corchetes {} y pondremos la propiedad que queremos sacar de dicho objeto, quedando el .map de la siguiente manera:
+
+```javascript
+<div className='wrapper'>
+    {performanceImages.map(({ id, src }) => (
+        <img key={id} src={src} alt={id} />
+    ))}
+</div>
+```
+
+Una vez tenemos hecho el mapeado de imagenes, simplemente añadiremos el contenido de la pagina y empezaremos a crear las animaciones, al igual que hemos hecho anteriormente es importante que funcionen de manera diferente en una resolución más pequeña por lo que volveremos a crear la variable de isMobile con el useMediaQuery.
+
+```javascript
+const isMobile = useMediaQuery({ query: '(max-width: 1024px)'});
+```
+
+Una vez tenemos esto animaremos el texto primero, ya que es sencillo de animar pero lo haremos de manera diferente a lo habitual, en este caso utilizaremos un fromTo, en vez de solamente un to, aunque tocaremso pocas cosas en el from, ya que solo vamos a moverlo un poco y ponerle 0 de opacidad, para que con el to, lo volvamos a su sitio y la opacidad correspondiente, haciendo que parezca que salen del suelo, le añadiremos un scrollTrigger para que vaya segun scrolleamos y ya estaria la animación del texto, es importante coger tanto el .content como el p. 
+
+```javascript
+gsap.fromTo(
+    ".content p",
+    { opacity: 0, y: 10 },
+    {
+        opacity: 1,
+        y: 0,
+        ease: "power1.out",
+        scrollTrigger: {
+            trigger: ".content p",
+            start: "top bottom",
+            end: "top center",
+            scrub: true,
+        },
+    }
+);
+```
+
+Con la animación del texto ya hecha, haremos la animación principal de la sección, que al igual que la de la sección anterior, esta no se aplicara en mobiles, por lo que deberemos de poner un condicional para comprobar si esta en mobil gracias a la variable que hemos creado antes y devolver un return en caso de que sea verdadero
+
+```javascript
+if(isMobile) return;
+```
+
+Importante hacer esto que vamos a hacer despues de dicho condicional, ya que si no, se ejecutara aunque este en mobil, ahora crearemos una timeline con ciertos valores por defectos para que a la hora de hacer las animaciones mantenga esos valores y con el scrollTrigger indicaremos cuando acaban
+
+```javascript
+const tl = gsap.timeline({
+    defaults: { duration: 2, ease: "power1.inOut", overwrite: "auto" },
+    scrollTrigger: {
+        trigger: '#performance',
+        start: "top bottom",
+        end: "center center",
+        scrub: 1,
+    },
+});
+```
+
+Una vez hecho esto, toca crear las animaciones de dicha timeline, lo cual va a ser algo más complejo de lo que hemos hecho con anterioridad, ya que esta vez sacaremos las animaciones de una de nuestra constantes que tenemos, voy a mostrar una de ejemplo para que se pueda entender mejor la animación:
+
+```javascript
+{
+    id: "p1",
+    left: 5,
+    bottom: 65,
+},
+```
+
+Nuestra constante performanceImgPositions, tiene multiples objetos los cuales tienen valores diferentes y segun esos valores nosotros crearemos la animación, pero en este caso en especifico, hay una imagen que no queremos que se anime, que sera la "p5", por lo que haremos un condicional para que ignore dicha imagen en el forEach().
+
+```javascript
+performanceImgPositions.forEach((item) => {
+    if (item.id === "p5") return; 
+})
+```
+
+Una vez tenemos el forEach de tal manera que ignora la imagen que queremos, nos tocara hacer un poquito de logica para animar las cosas adecuadamente, tendremos que hacer 2 variables, una para saber que elemento vamos a animar y otra que sera un objeto, para almacenar las animaciones que vamos a hacer, es importante que antes de añadir nada a la variable que es un objeto, comprobemos que no este vacia.
+
+```javascript
+const selector = `.${item.id}`;
+const vars = {};
+
+if (typeof item.left === "number") vars.left = `${item.left}%`;
+if (typeof item.right === "number") vars.right = `${item.right}%`;
+if (typeof item.bottom === "number") vars.bottom = `${item.bottom}%`;
+if (item.transform) vars.transform = item.transform;
+```
+
+De esta manera, ya tendriamos una variable con el nombre del selector y una variable que es un objeto con las animaciones que queremos hacer, por lo que solo nos tocara, usar dichas variables junto a .to() para animarlo:
+
+```javascript
+tl.to(selector, vars, 0);
+```
+
+De esta manera, si hemos seguido los pasos de manera correctamente, acabaremos con el siguiente useGSAP():
+
+```javascript
+useGSAP(() => {
+    
+    gsap.fromTo(
+        ".content p",
+        { opacity: 0, y: 10 },
+        {
+            opacity: 1,
+            y: 0,
+            ease: "power1.out",
+            scrollTrigger: {
+                trigger: ".content p",
+                start: "top bottom",
+                end: "top center",
+                scrub: true,
+                invalidateOnRefresh: true,
+            },
+        }
+    );
+
+    if (isMobile) return;
+    
+    const tl = gsap.timeline({
+        defaults: { duration: 2, ease: "power1.inOut", overwrite: "auto" },
+        scrollTrigger: {
+            trigger: '#performance',
+            start: "top bottom",
+            end: "center center",
+            scrub: 1,
+        },
+    });
+
+    performanceImgPositions.forEach((item) => {
+        if (item.id === "p5") return;
+
+        const selector = `.${item.id}`;
+        const vars = {};
+
+        if (typeof item.left === "number") vars.left = `${item.left}%`;
+        if (typeof item.right === "number") vars.right = `${item.right}%`;
+        if (typeof item.bottom === "number") vars.bottom = `${item.bottom}%`;
+        if (item.transform) vars.transform = item.transform;
+
+        tl.to(selector, vars, 0);
+    });
+},
+);
+```
+
 
 
