@@ -1263,7 +1263,7 @@ Una vez tenemos esto, podemos ver como se hace la animación y el video de la pa
 
 Con esto, ya tendriamos tanto la animación, como el texto, por lo que el componente ya esta terminado y completado.
 
-## Component Hightligths
+## Componente Hightligths
 Al igual que en los componentes anteriores que eran componentes de React y no de Three, crearemos su estructura basica y cambiaremos el div que se autogenera por un section con su id correspondiente:
 
 ```javascript
@@ -1345,6 +1345,49 @@ useGSAP(() => {
 ```
 
 Con esto, ya estarian practicamente todos y cada uno de los componentes terminados y animados, a excepción del footer.
+
+## Componente Footer
+
+El footer, aunque es algo bastante sencillo, tambien debemos de hacerlo como componente, ya que si no, "manchariamos y ensuciariamos" el archivo App.jsx, por lo que al igual que el componente anterior, crearemos un componente especifico para ello, a diferencia de que este en vez de ser un section, sera un footer.
+
+```javascript
+import React from 'react'
+
+const Footer = () => {
+  return (
+    <footer>Footer</footer>
+  )
+}
+
+export default Footer
+```
+
+Una vez tenemos esto, simplemente crearemos una estructura sencilla del footer, que lo unico especial que tendra, sera que los links estaran mapeados por una constante
+
+```javascript
+<footer>
+    <div className='info'>
+        <p>More ways to shop: <span>Find and Apple Store</span> or <span>other reailer</span> near you. Or call 000800 040 1966.</p>
+        <img src="/logo.svg" alt="apple logo" />
+    </div>
+
+    <hr />
+
+    <div className='links'>
+        <p>Copyright 2024 Apple Inc. All rights reserved. <br /> This page is not intended to replace, substitute, or deceive anyone; it is created solely for the purpose learning.</p>
+        <ul>
+            {footerLinks.map(({ label, link }) => (
+                <li key={label}>
+                    <a href={link}>{label}</a>
+                </li>
+            ))}
+        </ul>
+    </div>
+</footer>
+```
+
+Con esto, la pagina ya estaria terminada.
+
 
 
 
