@@ -1,6 +1,5 @@
 
-Enlace a la web: <br/>
-Enlace al repositorio: 
+Enlace a la web: https://apple-clon-iota.vercel.app/ <br/>
 
 ---
 
@@ -1388,7 +1387,17 @@ Una vez tenemos esto, simplemente crearemos una estructura sencilla del footer, 
 
 Con esto, la pagina ya estaria terminada.
 
+## Animación extra
 
+Como sugerencia de un amigo, he hecho un cambio en el componente Features.jsx, el cuál es un cambio de color en el modelo una vez termina su animación de girar, de esta manera da un efecto más "impresionante" y muestra que ambos modelos pueden hacerlo, para hacer esto, simplemente tuve que crear una función extra, la cual dependiendo del color cambia a uno u otro
+
+```javascript
+toggleColor: () => set((state) => ({
+    color: state.color === '#2e2c2e' ? '#adb5bd' : '#2e2c2e'
+})),
+```
+
+El state es basicamente el objeto de ZUSTAND completo, por lo que tiene todas las propiedades, includa la propiedad de color guardada ahi, asi que asignamos el color en función al color del state que ya tenemos y mediante la condición ternaria sabemos a cual cambiar
 
 
 
