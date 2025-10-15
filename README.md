@@ -112,11 +112,11 @@ En caso de que tuvieramos multiples constantes, podriamos exportarlas todas a la
 
 Una vez tenemos las constantes, ya podemos usarlas junto a la función .map() para crear listas de maneras dinamicas, esto lo podemos hacer la siguiente manera:
 
-```html
+```javascript
 <ul>
     {navLinks.map(({ label }) => (
         <li key={label}>
-            <a href={label}>{label}</a>
+            <a href="#">{label}</a>
         </li>
     ))}
 </ul>
@@ -128,7 +128,7 @@ Para utilizar imagenes tendremos que tenerlas en la carpeta **public** en nuestr
 
 Una vez tenemos el componente hecho, el cual seria el siguiente:
 
-```html
+```javascript
 <header>
     <nav>
         <a href="/#">
@@ -1251,7 +1251,7 @@ Una vez tenemos esto, podemos ver como se hace la animación y el video de la pa
 
 ```javascript
 {features.map((feature, index) => (
-    <div className={clsx('box', `box${index + 1}`, feature.styles)}>
+    <div key={feature.id} className={clsx('box', `box${index + 1}`, feature.styles)}>
         <img src={feature.icon} alt={feature.highlight} />
         <p>
             <span className='text-white'>{feature.highlight}</span>
