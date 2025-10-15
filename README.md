@@ -1035,7 +1035,7 @@ De esta manera, si hemos seguido los pasos de manera correctamente, acabaremos c
 
 ```javascript
 useGSAP(() => {
-    
+
     gsap.fromTo(
         ".content p",
         { opacity: 0, y: 10 },
@@ -1081,6 +1081,187 @@ useGSAP(() => {
 },
 );
 ```
+
+## Componente Feature
+Este componente seguira siendo un componente de React normal y corriente, aunque vamos a utilizar un modelo 3D otra vez, por lo que le haremos un pequeño cambio al index.js que tenemos en la carpeta store, ya que ahora tenemos otra necesidad más, y esa sera cambiarle la textura, por lo que deberemos de crear lo mismo que hizimos para el color y la escala, pero para la textura:
+
+```javascript
+texture: '/videos/feature-1.mp4',
+setTexture: (texture) => set({ texture }),
+
+reset: () => set({ color: '#2e2c2e', scale: 0.08, texture: '/videos/feature-1.mp4' })
+```
+
+Usando el unico modelo que no llegamos a utilizar, es decir, el del Macbook Pro normal, no el model 14 o 16, deberemos de añadirle el soporte para la textura y el color, ya que queremos modificarselo, al igual que previamente, deberemos de usar useMacbookStore() para obtener tanto el color como la textura:
+
+```javascript
+const { color, texture } = useMacbookStore;
+```
+
+Ademas de esto, tenemos que añadirle la escana al useGLTF para modificar la pantalla, una vez tenemos ese cambio podemos crear una variable para la pantalla, usando el useVideoTexture de @react-three/drei y como ya teniamos hecho el useEffect para modificar los colores, podemos reutilizarlo
+
+```javascript
+const { nodes, materials, scene } = useGLTF('/models/macbook-transformed.glb');
+
+const screen = useVideoTexture(texture);
+
+useEffect(() => {
+  scene.traverse((child) => {
+    if (child.isMesh) {
+      if (!noChangeParts.includes(child.name)) {
+        child.material.color = new Color(color);
+      }
+    }
+  });
+}, [color, scene]);
+```
+
+Al igual que en los modelos anteriores, deberemos de cambiar el mesh con el nodes.Object_123 y en este caso le quitaremos el material y añadiremos el nuestro, aunque en los otros pusimos texture, en este pondremos screen, ya que hemos hecho previamente que screen sea el useVideoTexture(texture):
+
+```javascript
+<mesh geometry={nodes.Object_123.geometry} rotation={[Math.PI / 2, 0, 0]}>
+  <meshBasicMaterial map={screen} />
+</mesh>
+```
+
+Una vez tenemos esto, para representar el modelo 3D, al igual que en el otro componente, deberemos de crear un Canvas importado de @react-three/fiber, ademas, aprovecharemos el componente de three que creamos previamente, StudioLigths, de momento no pondremos el modelo del Macbook Pro, porque prepareremos la sección.
+
+```javascript
+<Canvas id='f-canvas' camera={{}}>
+    <StudioLights />
+    <ambientLight intensity={0.5} />
+    {/* 3D MODEL */}
+</Canvas>
+```
+
+Para preparar la sección mapearemos las features de nuestro archivo de constantes, el cual tendra clases que se renderizan dinamicamente, al igual que hicimos previamente, usando clsx
+
+```javascript
+<div className='absolute inset-0'>
+    {features.map((feature, index) => (
+        <div className={clsx('box', `box${index + 1}`, feature.styles)}>{feature.text}</div>
+    ))}
+</div>
+```
+
+Para cargar el modelo 3D en este caso, como tendra varios videos puede llegar a tardar, por lo que crearemos una función por expresión, lá cual muestre un texto de "Loading..." en caso de que no se haya terminado de cargar, aunque no es muy complicado, puede llegar a dificultarse si no sabemos lo que estamos haciendo, por lo que lo primero que tendremos que hacer es crear un group de three, con una referencia de useRef, la cual llamaremos groupRef, y dentro de la etiqueta gruoup crearemos una que es Suspense, la cual tenemos que importar de React. Con esto, deberemos de añadirle el metodo de fallback={}, la cual contendra una etiqueta Html que viene de @react-three/drei, y ahora ya podremos poner dentro nuestro H1 que pone Loading... y solamente tendremos que añadir el modelo, dependiendo el tamaño de si es mobil o no.
+
+```javascript
+<Suspense fallback={<Html><h1 className='text-white text-3xl uppercase'>Loading...</h1></Html>}>
+    <MacbookModel scale={isMobile ? 0.05 : 0.08} position={[0, -1, 0]} />
+</Suspense>
+```
+
+Con eso hecho, ya podemos ponerlo en nuestro Canvas y podremos verlo de manera adecuada, ahora carga rapido ya que es solamente un video, en caso de que tuviera que cargar varios podria tardar más pero para ello utilizaremos una carga virtual de los videos.
+
+```javascript
+<Canvas id='f-canvas' camera={{}}>
+    <StudioLights />
+    <ambientLight intensity={0.5} />
+    <ModelScroll />
+</Canvas>
+```
+
+Para crear dicho elemento virtual utilizaremos un useEffect, en el cual obtendremos una de nuestras constantes (featureSequence) y de cada feature crearemos una variable que sera un video que creamos mediante el document.createElement('video') y mediante Object.assign(), le asignamos las propiedades que queremos que tenga el video y con .load() lo cargamos, de esta manera estaremos cargando los videos sin mostrarlos en la pagina, para que cuando queramos mostrarlo ya esten listos
+
+```javascript
+useEffect(() => {
+    featureSequence.forEach((feature) => {
+        const v = document.createElement('video');
+
+        Object.assign(v, {
+            src: feature.videoPath,
+            muted: true,
+            playsInline: true,
+            preload: 'auto',
+            crossOrigin: 'anonymous'
+        });
+
+        v.load();
+    });
+}, []);
+```
+
+Una vez tenemos esto, vamos a crear una animación sencilla, en la cual rotaremos el modelo 3D para darle un efecto "espectacular" mientras scrolleamos y mostramos las caracteristicas de dicho modelo, para ello, como todas las animaciones hechas en el proyecto, lo haremos mediante useGSAP(), para ello crearemos una timeline sencilla con la propiedad de pin activada:
+
+```javascript
+const modelTimeline = gsap.timeline({
+    scrollTrigger: {
+        trigger: '#f-canvas',
+        start: 'top top',
+        end: 'bottom top',
+        scrub: 1,
+        pin: true,
+    }
+});
+```
+
+Usando dicha timeline y la referencia que pusimos en el group, es decir, groupRef, crearemos una animación sencilla que simplemente haga girar el modelo, para ello utilizaremos un condicional, para saber si ya esta cargado el grupo a partir de la referencia y animaremos exclusivamente la rotación, por lo que debemos aplicar la animación al groupRef.current.rotation y para que gire completamente utilizaremos Math.PI * 2, ya que PI es medio radio.
+
+```javascript
+if (groupRef.current) {
+    modelTimeline.to(groupRef.current.rotation, { y: Math.PI * 2, ease: 'power1.inOut' });
+}
+```
+
+Un dato curioso que se puede apreciar en la animación es que el giro se hace horizontalmente, pero nosotros estamos cambiando el valor de Y, que es el eje vertical, entonces... Porque gira de manera horizontal al cambiar el valor del eje vertical? Esto se debe a que estamos cambiando la propiedad de rotation, no el valor del eje en si, por lo que al cambiar el valor de la rotación girara en horizontal, ya que si cambiamos el valor del eje en sí, ya si que se movera en vertical. Para simplificarlo, simplemente debemos acordanos que en rotación los ejes estan "invertidos", así es más facil de recordar.
+
+Ahora crearemos otra timeline, la cual sera practicamente indentica a la primera, pero sera una variable diferente, ya que esta la utilizaremos para los textos y cambiarle el video del modelo, por lo que tendriamos otra timeline igual a la anterior, excepto porque empezara despues, ya que esta empieza cuando la parte de arriba del trigger, alcance la mitad de la pantalla:
+
+```javascript
+const timeline = gsap.timeline({
+    scrollTrigger: {
+        trigger: '#f-canvas',
+        start: 'top center',
+        end: 'bottom top',
+        scrub: 1,
+    }
+});
+```
+
+Con la timeline ya creada y ajustada, tocara haciar las animaciones, que en este caso, ademas del .to(), tambien utilizaremos .call(), que esto sirve para llamar a una función, la cual sera la función de cambiar la textura (es decir, el video de la pantalla) y despues lo animaremos.
+
+```javascript
+timeline
+    .call(() => setTexture('/videos/feature-1.mp4'))
+    .to('.box1', { opacity: 1, y: 0, delay: 1 });
+```
+
+Una vez tenemos esa simple animación, ahora lo que haremos sera repetirla por cada video/caracteristica que tenemos cambiando los valores para que se correspondan y no salga todo el rato la misma, quedando tal que así:"
+
+```javascript
+timeline
+    .call(() => setTexture('/videos/feature-1.mp4'))
+    .to('.box1', { opacity: 1, y: 0, delay: 1 })
+
+    .call(() => setTexture('/videos/feature-2.mp4'))
+    .to('.box2', { opacity: 1, y: 0})
+
+    .call(() => setTexture('/videos/feature-3.mp4'))
+    .to('.box3', { opacity: 1, y: 0 })
+
+    .call(() => setTexture('/videos/feature-4.mp4'))
+    .to('.box4', { opacity: 1, y: 0 })
+
+    .call(() => setTexture('/videos/feature-5.mp4'))
+    .to('.box5', { opacity: 1, y: 0, })
+```
+
+Una vez tenemos esto, podemos ver como se hace la animación y el video de la pantalla va cambiando según bajas, ademas del texto que aparece, para darle un toque más elegante cambiaremos un poco el texto para que quede mejor. Es importante saber que aunque hemos cargado los videos previamente, es posible que en el cambio de videos el modelo desaparezca por unos instantes y vuelva a aparecer, eso es debido a que se le esta aplicando el cambio de textura por primera vez, una vez se han aplicado, ya no volvera a pasar por mucho que scrolles nuevamente.
+
+```javascript
+{features.map((feature, index) => (
+    <div className={clsx('box', `box${index + 1}`, feature.styles)}>
+        <img src={feature.icon} alt={feature.highlight} />
+        <p>
+            <span className='text-white'>{feature.highlight}</span>
+            {feature.text}
+        </p>
+    </div>
+))}
+```
+
+Con esto, ya tendriamos tanto la animación, como el texto, por lo que el componente ya esta terminado y completado.
 
 
 
