@@ -13,7 +13,7 @@ import { useGSAP } from '@gsap/react';
 const ModelScroll = () => {
     const groupRef = useRef(null);
     const isMobile = useMediaQuery({ query: '(max-width: 1024px)' });
-    const { setTexture } = useMacbookStore();
+    const { setTexture, toggleColor } = useMacbookStore();
 
     useEffect(() => {
         featureSequence.forEach((feature) => {
@@ -70,6 +70,7 @@ const ModelScroll = () => {
             .to('.box4', { opacity: 1, y: 0 })
 
             .call(() => setTexture('/videos/feature-5.mp4'))
+            .call(() => toggleColor())
             .to('.box5', { opacity: 1, y: 0, });
 
     }, []);
