@@ -6,7 +6,7 @@ const Navbar = () => {
         <header>
             <nav>
                 <a href="/#">
-                    <img src="/logo.svg" alt="Apple logo" />
+                    <img className='w-12 h-12' src="/favicon.png" alt="Apple logo" />
                 </a>
 
                 <ul>
